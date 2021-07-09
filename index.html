@@ -1,105 +1,127 @@
 <!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="utf-8">
-    <title>DMCE Verifier Leaderboard</title>
-  </head>
-  <body>
-    <style type="text/css">
-      @font-face {
-        font-family: 'minecraftregular';
-        src: url('minecraftregular-bmg3-webfont.woff2') format('woff2'),
-             url('minecraftregular-bmg3-webfont.woff') format('woff');
-        font-weight: normal;
-        font-style: normal;
-      }
-      body{
-        background-color: rgba(0,0,0,0);
-      }
-      #output{
-        font-size: 500%;
-        /*font-family: Sans-serif;*/
-        font-family: minecraftregular;
-        background-color: #ffffff;
-        color: #ffa2d7;
-        /*color: #ffffff;*/
-        table-layout: auto;
-        width: 100%;
-        border-collapse: collapse;
-      }
-      td{
-        /*border: 5px solid #99aab5;*/
-        /*border: 2px solid #2c2f33;*/
-        padding: 10px;
-      }
-    </style>
-    <table id="output">
-    </table>
-    <script type="text/javascript">
-      const HEADER = "https://www.speedrun.com/api/v1/";
+<html>
+<meta charset="UTF-8">
 
-      async function json_from_url_await(url) {
-        return await fetch(url)
-                     .then(resp => resp.json());
-      }
+<head>
+	<title>DMCE Verifier Leaderboard</title>
+</head>
 
-      async function json_from_src_await(short_url) {
-        return await json_from_url_await(HEADER + short_url);
-      }
+<body>
+	<style type="text/css">
+		@font-face {
+    font-family: 'minecraftregular';
+    src: url('minecraftregular-bmg3-webfont.woff2') format('woff2'),
+         url('minecraftregular-bmg3-webfont.woff') format('woff');
+    font-weight: normal;
+    font-style: normal;
 
-      async function continual_data_await(short_url) {
-        let hold = [];
+}
+		body{
+			background-color: rgba(0,0,0,0);
+		}
+		#table{
+			font-size: 500%;
+			/*font-family: Sans-serif;*/
+			font-family: minecraftregular;
+			background-color: #ffffff;
+			color: #ffa2d7;
+			/*color: #ffffff;*/
+			table-layout: auto;
+			width: 100%;
+			border-collapse: collapse;
+		}
+		td{
+			/*border: 5px solid #99aab5;*/
+			/*border: 2px solid #2c2f33;*/
+			padding: 10px;
+		}
+	</style>
+	<div id="board">
+		<table id="table">
+		</table>
+	</div>
+	<script type="text/javascript">
+	function swap(json) {
+		var ret = {};
+		for (var key in json) {
+			ret[json[key]] = key;
+		}
+		return ret;
+	}
 
-        async function next_await(json) {
-          hold.push(...json.data);
-          if (!("pagination" in json) || (json.pagination.size < 200))
-            return;
-          let linkMap = json.pagination.links.reduce((newObj, x) => ({...newObj, [x.rel]: x.uri}), {});
-          await json_from_url_await(linkMap.next)
-                              .then(json => next_await(json));
+	function sortObject(obj) {
+		return Object.keys(obj)
+			.sort().reduce((a, v) => {
+				a[v] = obj[v];
+				return a;
+			}, {});
+	}
+	function reverseObject(object) {
+        var newObject = {};
+        var keys = [];
+
+        for (var key in object) {
+            keys.push(key);
         }
 
-        return await json_from_src_await(short_url + (short_url.includes("?") ? "&max=200" : "?max=200"))
-                                   .then(json => next_await(json))
-                                   .then(() => hold);
+        for (var i = keys.length - 1; i >= 0; i--) {
+          var value = object[keys[i]];
+          newObject[keys[i]]= value;
+        }       
+
+        return newObject;
       }
+	let xhr = new XMLHttpRequest();
+	xhr.open("GET", "https://www.speedrun.com/api/v1/games/m1mxk2k6", false);
+	xhr.send();
+	moderators = []
+	runsVerified = []
+	database = JSON.parse(xhr.responseText);
+	for (key in database["data"]["moderators"]) {
+		moderators.push(key)
+	}
+	let xhr2 = new XMLHttpRequest();
+	for (var i = moderators.length - 1; i >= 0; i--) {
+		xhr2.open("GET", "https://www.speedrun.com/api/v1/runs?game=m1mxk2k6&max=200&examiner=" + moderators[i], false);
+		xhr2.send();
+		runs = JSON.parse(xhr2.responseText)
+		runsVerifiedNumberDMCE = runs.pagination.size
+		do {
+			if (runs.pagination.size == 200) {
+				xhr2.open("GET", "https://www.speedrun.com/api/v1/runs?game=m1mxk2k6&max=200&examiner=" + moderators[i] + "&offset=" + runsVerifiedNumberDMCE, false);
+				xhr2.send();
+				runs = JSON.parse(xhr2.responseText)
+				runsVerifiedNumberDMCE += runs.pagination.size
+			}
+      
+		runsVerifiedNumber = runsVerifiedNumberDMCE
 
-      async function main() {
-        let game = "m1mxk2k6";
-        let gameObj = await json_from_src_await(`games/${game}?embed=moderators`);
-        let game2Obj = await json_from_src_await(`games/${game2}?embed=moderators`);
-        let modsObj = await gameObj.data.moderators.data;
-        await modsObj.push(...game2Obj.data.moderators.data);
-        let nameMap = await modsObj.reduce((newObj, x) => ({...newObj, [x.id]: x.names.international}), {});
-        let moderators = await Object.keys(nameMap);
-        let dict = await moderators.reduce((newObj, x) => ({...newObj, [x]: 0}), {});
+		runsVerified.push(runsVerifiedNumber)
+	}
+	runsVerified = runsVerified.reverse()
+	var result = {};
+	moderators.forEach((key, i) => result[key] = runsVerified[i]);
 
-        await(async function () {
-          let hold = [];
-          for (let mod of moderators) {
-            hold.push(continual_data_await(`runs?game=${game}&examiner=${mod}`)
-                                     .then(list => list.length)
-                                     .then(function (len) {dict[mod] += len;}));
-            hold.push(continual_data_await(`runs?game=${game2}&examiner=${mod}`)
-                                     .then(list => list.length)
-                                     .then(function (len) {dict[mod] += len;}));
-          }
-          await Promise.all(hold);
-          let modsArray = [];
-          for (mod in dict)
-            modsArray.push([mod, dict[mod]]);
-          modsArray.sort(function(a, b) {return b[1] - a[1];});
+	result = swap(result)
+	result = sortObject(result)
+	result = swap(result)
+	result = reverseObject(result)
 
-          let output = "";
-          for (let i = 1; i <= modsArray.length; i++) {
-            let mod = modsArray[i - 1];
-            output += `<tr><td>${i}</td><td>${nameMap[mod[0]]}</td><td>${mod[1]}</td></tr>`;
-          }
-          document.getElementById("output").innerHTML = output;
-        }());
-      }
+	//	result = Object.keys(result).sort(function(a,b){return result[a]-result[b]})
+	console.log(result);
+	let xhr3 = new XMLHttpRequest();
+	var output = ""
+	var place = 0
+	for (key in result) {
+		place++
+		xhr3.open("GET", "https://www.speedrun.com/api/v1/users/" + key, false);
+		xhr3.send();
+		ModName = JSON.parse(xhr3.responseText)
+		name2 = ModName["data"]["names"]["international"]
+		output += "<tr><td>"+place+"</td><td>" + name2 + "</td><td>" + result[key] + "</td><tr>"
+	}
+	document.getElementById("table").innerHTML = output
+	</script>
+</body>
 
-      main();
-    </script>
-  </body>
 </html>
