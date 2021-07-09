@@ -3,7 +3,7 @@
 <meta charset="UTF-8">
 
 <head>
-	<title>mcbe leaderboard</title>
+	<title>DMCE Leaderboard</title>
 </head>
 
 <body>
@@ -72,7 +72,7 @@
         return newObject;
       }
 	let xhr = new XMLHttpRequest();
-	xhr.open("GET", "https://www.speedrun.com/api/v1/games/yd4ovvg1", false);
+	xhr.open("GET", "https://www.speedrun.com/api/v1/games/m1mxk2k6", false);
 	xhr.send();
 	moderators = []
 	runsVerified = []
@@ -82,13 +82,13 @@
 	}
 	let xhr2 = new XMLHttpRequest();
 	for (var i = moderators.length - 1; i >= 0; i--) {
-		xhr2.open("GET", "https://www.speedrun.com/api/v1/runs?game=yd4ovvg1&max=200&examiner=" + moderators[i], false);
+		xhr2.open("GET", "https://www.speedrun.com/api/v1/runs?game=m1mxk2k6&max=200&examiner=" + moderators[i], false);
 		xhr2.send();
 		runs = JSON.parse(xhr2.responseText)
 		runsVerifiedNumberMcbe = runs.pagination.size
 		do {
 			if (runs.pagination.size == 200) {
-				xhr2.open("GET", "https://www.speedrun.com/api/v1/runs?game=yd4ovvg1&max=200&examiner=" + moderators[i] + "&offset=" + runsVerifiedNumberMcbe, false);
+				xhr2.open("GET", "https://www.speedrun.com/api/v1/runs?game=m1mxk2k6&max=200&examiner=" + moderators[i] + "&offset=" + runsVerifiedNumberMcbe, false);
 				xhr2.send();
 				runs = JSON.parse(xhr2.responseText)
 				runsVerifiedNumberMcbe += runs.pagination.size
@@ -96,13 +96,13 @@
 
 		} while (runs.pagination.size == 200)
 
-		xhr2.open("GET", "https://www.speedrun.com/api/v1/runs?game=v1po7r76&max=200&examiner=" + moderators[i], false);
+		xhr2.open("GET", "https://www.speedrun.com/api/v1/runs?game=m1mxk2k6&max=200&examiner=" + moderators[i], false);
 		xhr2.send();
 		runs = JSON.parse(xhr2.responseText)
 		runsVerifiedNumberMcbece = runs.pagination.size
 		do {
 			if (runs.pagination.size == 200) {
-				xhr2.open("GET", "https://www.speedrun.com/api/v1/runs?game=v1po7r76&max=200&examiner=" + moderators[i] + "&offset=" + runsVerifiedNumberMcbece, false);
+				xhr2.open("GET", "https://www.speedrun.com/api/v1/runs?game=m1mxk2k6&max=200&examiner=" + moderators[i] + "&offset=" + runsVerifiedNumberMcbece, false);
 				xhr2.send();
 				runs = JSON.parse(xhr2.responseText)
 				runsVerifiedNumberMcbece += runs.pagination.size
