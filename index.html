@@ -103,7 +103,7 @@
           let output = "";
           for (let i = 1; i <= modsArray.length; i++) {
             let mod = modsArray[i - 1];
-            output += `<tr><td>${i}</td><td>${nameMap[mod[0]]}</td>`;
+            output += `<tr><td>${i}</td><td>${nameMap[mod[0]]}</td><td></td></tr>`;
           }
           document.getElementById("output").innerHTML = output;
         }());
