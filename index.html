@@ -75,6 +75,7 @@
 
       async function main() {
         let game = "m1mxk2k6";
+        let game2 = "m1mxk2k6";
         let gameObj = await json_from_src_await(`games/${game}?embed=moderators`);
         let game2Obj = await json_from_src_await(`games/${game2}?embed=moderators`);
         let modsObj = await gameObj.data.moderators.data;
